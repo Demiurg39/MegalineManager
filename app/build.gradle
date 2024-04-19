@@ -23,6 +23,9 @@ dependencies {
 
     // This dependency is used by the application.
     implementation libs.guava
+
+    // For db (LINUX)
+    implementation 'org.mariadb.jdbc:mariadb-java-client:2.1.2'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -30,6 +33,11 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+jar {
+  archiveBaseName = "megaline-mgr"
+  archiveVersion = "0.1"
 }
 
 application {
