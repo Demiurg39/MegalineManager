@@ -8,14 +8,21 @@ public class User {
   private String address;
   private String email;
 
-  User(String name, String address, String email) {
+  public User(UUID id, String name, String address, String email) {
+    this.id = id;
+    this.name = name;
+    this.address = address;
+    this.email = email;
+  }
+
+  public User(String name, String address, String email) {
     this.id = UUID.randomUUID();
     this.name = name;
     this.address = address;
     this.email = email;
   }
 
-  User(String name, String address) {
+  public User(String name, String address) {
     this.id = UUID.randomUUID();
     this.name = name;
     this.address = address;
