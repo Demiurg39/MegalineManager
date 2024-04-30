@@ -4,43 +4,45 @@ import java.util.UUID;
 
 public class Connection {
   private String ipAddress;
-  private UUID clientId;
+  private UUID userId;
   private boolean connectionStatus;
   private double connectionSpeed;
+  private int tariffId;
 
-Connection(String ipAddress, UUID clientId, boolean connectionStatus, double connectionSpeed) {
-        this.ipAddress = ipAddress;
-        this.clientId = clientId;
-        this.connectionStatus = connectionStatus;
-        this.connectionSpeed = connectionSpeed;
-    }
+  public Connection(String ipAddress, UUID userId, boolean connectionStatus, TariffPlan tariff) {
+    this.ipAddress = ipAddress;
+    this.userId = userId;
+    this.connectionStatus = connectionStatus;
+    this.connectionSpeed = tariff.getSpeed();
+    this.tariffId = tariff.getId();
+  }
 
-    Connection(String ipAddress, UUID clientId, boolean connectionStatus) {
-        this(ipAddress, clientId, connectionStatus, 20.0);
-    }
+  public Connection(String ipAddress, UUID userId, TariffPlan tariff) {
+    this(ipAddress, userId, false, tariff);
+  }
 
-    Connection(String ipAddress, UUID clientId, double connectionSpeed) {
-        this(ipAddress, clientId, false, connectionSpeed);
-    }
-
-    Connection(String ipAddress, UUID clientId) {
-        this(ipAddress, clientId, false, 20.0);
-    }
+  public Connection(UUID userId, TariffPlan tariff) {
+    this("127.0.0.1", userId, false, tariff);
+  }
 
   public String getIp() {
     return this.ipAddress;
   }
 
   public UUID getId() {
-    return this.clientId;
+    return this.userId;
   }
 
-  public boolean getStatus() {
-    return this.connectionStatus;
+  public int getStatus() {
+    return this.connectionStatus?1:0;
   }
 
   public double getSpeed() {
     return this.connectionSpeed;
+  }
+
+  public int getTariffId() {
+    return this.tariffId;
   }
 
   public void setStatus(boolean status) {
