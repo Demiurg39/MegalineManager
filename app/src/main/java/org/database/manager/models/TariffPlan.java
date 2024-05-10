@@ -1,4 +1,4 @@
-package org.models;
+package org.database.manager.models;
 
 public class TariffPlan {
   private static int nextId = 1;

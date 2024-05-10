@@ -1,4 +1,4 @@
-package org.manager;
+package org.database.manager;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,12 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import org.database.manager.ConnectionManager;
+import org.database.manager.UserManager;
+import org.database.manager.models.Connection;
+import org.database.manager.models.TariffPlan;
+import org.database.manager.models.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.models.User;
-import org.models.Connection;
-import org.models.TariffPlan;
 
 public class ConnectionManagerTest {
 
@@ -24,7 +26,7 @@ public class ConnectionManagerTest {
   private User testUser;
 
   @BeforeEach
-  public void setUp() throws SQLException{
+  public void setUp() throws SQLException {
     userManager = new UserManager();
     testUser = new User("Test User", "Test Address", "test@example.com");
     userManager.create(testUser);

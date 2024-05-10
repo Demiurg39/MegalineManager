@@ -1,4 +1,4 @@
-package org.models;
+package org.database.manager.models;
 
 import java.util.UUID;
 

@@ -1,10 +1,10 @@
-package org.manager;
+package org.database.manager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.database.JDBC;
-import org.models.TariffPlan;
+import org.database.manager.models.TariffPlan;
 
 public class TariffPlanManager implements InterfaceManager<TariffPlan> {
 

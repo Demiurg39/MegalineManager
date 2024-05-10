@@ -1,10 +1,10 @@
-package org.manager;
+package org.database.manager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.database.JDBC;
-import org.models.User;
+import org.database.manager.models.User;
 
 public class UserManager implements InterfaceManager<User> {
 

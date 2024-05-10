@@ -1,10 +1,10 @@
-package org.manager;
+package org.database.manager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.database.JDBC;
-import org.models.Connection;
+import org.database.manager.models.Connection;
 
 public class ConnectionManager implements InterfaceManager<Connection> {
 

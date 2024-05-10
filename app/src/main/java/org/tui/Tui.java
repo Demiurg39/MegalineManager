@@ -11,7 +11,7 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
 
-public class MegaTUI {
+public class Tui {
     public static void main(String[] args) {
         try {
             Terminal terminal = new DefaultTerminalFactory().createTerminal();

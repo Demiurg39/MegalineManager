@@ -24,8 +24,23 @@ dependencies {
     // This dependency is used by the application.
     implementation libs.guava
 
-    // For db (LINUX)
+    // For database driver
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.1.2'
+
+    // a dependency on Jackson Databind
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.9'
+
+    // and a dependency on vert.x
+    implementation 'io.vertx:vertx-core:3.5.3'
+
+    // Simple logging for Java
+    implementation 'org.slf4j:slf4j-api:2.0.13'
+
+    // Logback as login provider
+    implementation 'ch.qos.logback:logback-classic:1.5.6'
+
+    // Lanterna as TUI provider
+    implementation 'com.googlecode.lanterna:lanterna:3.1.2'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -42,7 +57,7 @@ jar {
 
 application {
     // Define the main class for the application.
-    mainClass = 'org.control.Manager'
+    mainClass = 'org.httpserver.HttpServer'
 }
 
 tasks.named('test') {
