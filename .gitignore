@@ -5,8 +5,8 @@
 build
 
 # Ignore bin directory
-bin
+app/bin
 
 # Some dotfiles
 
-.classpath
+app/.classpath
