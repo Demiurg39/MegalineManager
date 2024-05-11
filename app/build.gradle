@@ -41,6 +41,9 @@ dependencies {
 
     // Lanterna as TUI provider
     implementation 'com.googlecode.lanterna:lanterna:3.1.2'
+
+    // Hash library, for password hashing
+    implementation 'org.mindrot:jbcrypt:0.4'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
