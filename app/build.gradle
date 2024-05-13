@@ -55,12 +55,12 @@ java {
 
 jar {
   archiveBaseName = "megaline-mgr"
-  archiveVersion = "0.1"
+  archiveVersion = "0.5"
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'org.httpserver.HttpServer'
+    mainClass = 'org.megaline.httpserver.HttpServer'
 }
 
 tasks.named('test') {
