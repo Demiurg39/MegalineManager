@@ -2,14 +2,10 @@ package org.megaline.httpserver.http;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-import org.megaline.httpserver.util.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
 
 public class HttpParser {
 
@@ -21,13 +17,14 @@ public class HttpParser {
   private static final int COLON = 0x3A;
 
   public HttpRequest parseHttpRequest(InputStream inputStream) throws HttpParsingException {
-    InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.US_ASCII);
     HttpRequest request = new HttpRequest();
 
     try {
       parseRequestLine(inputStream, request);
       parseHeaders(inputStream, request);
-      parseBody(inputStream, request);
+      if (request.getHeader("Content-Length") != null) {
+        parseBody(inputStream, request);
+      }
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -139,21 +136,16 @@ public class HttpParser {
   }
 
   private void parseBody(InputStream inputStream, HttpRequest request) throws IOException {
-    StringBuilder body = new StringBuilder();
-    int byte_;
-    while ((byte_ = inputStream.read()) >= 0) {
-      body.append((char) byte_);
-    }
-    LOGGER.info("Request BODY : {}", body.toString());
-    request.setBody(body.toString());
+    int contentLength = Integer.parseInt(request.getHeader("Content-Length"));
+    byte[] bodyBytes = new byte[contentLength];
+    int bytesRead = inputStream.read(bodyBytes);
 
-    // Try to parse the body as JSON
-    try {
-      JsonNode jsonNode = Json.parse(body.toString());
-      request.setJsonBody(jsonNode);
-    } catch (IOException e) {
-      LOGGER.warn("Failed to parse body as JSON: {}", e.getMessage());
+    if (bytesRead != contentLength) {
+      throw new IOException("Failed to read the complete body of the request");
     }
+
+    String body = new String(bodyBytes, StandardCharsets.US_ASCII);
+    LOGGER.info("Request BODY : {}", body);
+    request.setBody(body);
   }
-
 }
