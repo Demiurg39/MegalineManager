@@ -8,6 +8,7 @@ import java.net.Socket;
 import org.megaline.httpserver.http.HttpParser;
 import org.megaline.httpserver.http.HttpParsingException;
 import org.megaline.httpserver.http.HttpRequest;
+import org.megaline.httpserver.http.HttpResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,19 +34,37 @@ public class HttpWorkerThread implements Runnable {
     InputStream inputStream = null;
     OutputStream outputStream = null;
     HttpRequest request = null;
+    HttpResponse response = null;
 
     try {
       inputStream = socket.getInputStream();
       outputStream = socket.getOutputStream();
+      boolean flag = false;
 
       request = httpParser.parseHttpRequest(inputStream);
 
       LOGGER.info("Request METHOD is : {}", request.getMethod());
       LOGGER.info("Request TARGET is : {}", request.getRequestTarget());
       LOGGER.info("Request VERSION is : {}", request.getHttpVersion());
-      // LOGGER.info("Header fiels : {}");
+      LOGGER.info("Request BODY is : {}", request.getBody());
 
-    } catch (IOException e) {
+      if (request.getRequestTarget().contains("user")) {
+        LOGGER.info("Starting User processing thread.");
+
+      } else if (request.getRequestTarget().contains("/employe")) {
+        LOGGER.info("Starting Employe processing thread.");
+
+      } else if (request.getRequestTarget().contains("/connection")) {
+        LOGGER.info("Starting Connection processing thread.");
+
+      } else if (request.getRequestTarget().contains("/tariffplan")) {
+        LOGGER.info("Starting Tariff processing thread.");
+
+      }
+
+    } catch (
+
+    IOException e) {
       LOGGER.error("Problem with comunication", e);
     } catch (HttpParsingException e) {
       e.printStackTrace();
@@ -68,8 +87,5 @@ public class HttpWorkerThread implements Runnable {
       } catch (IOException e) {
       }
     }
-
-    // Red TODO complete run method
-    // throw new UnsupportedOperationException("Unimplemented method 'run'");
   }
 }
