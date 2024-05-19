@@ -1,110 +1,159 @@
 package org.megaline.httpserver.http;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.Hashtable;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
-/**
- * Class for HTTP request parsing as defined by RFC 2612:
- * 
- * Request = Request-Line ; Section 5.1 (( general-header ; Section 4.5 |
- * request-header ; Section 5.3 | entity-header ) CRLF) ; Section 7.1 CRLF [
- * message-body ] ; Section 4.3
- * 
- * @author izelaya
- *
- */
+import org.megaline.httpserver.util.Json;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class HttpParser {
 
-    private String _requestLine;
-    private Hashtable<String, String> _requestHeaders;
-    private StringBuffer _messagetBody;
+  private final static Logger LOGGER = LoggerFactory.getLogger(HttpParser.class);
 
-    public HttpParser() {
-        _requestHeaders = new Hashtable<String, String>();
-        _messagetBody = new StringBuffer();
+  private static final int SP = 0x20;
+  private static final int CR = 0x0D;
+  private static final int LF = 0x0A;
+  private static final int COLON = 0x3A;
+
+  public HttpRequest parseHttpRequest(InputStream inputStream) throws HttpParsingException {
+    InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.US_ASCII);
+    HttpRequest request = new HttpRequest();
+
+    try {
+      parseRequestLine(inputStream, request);
+      parseHeaders(inputStream, request);
+      parseBody(inputStream, request);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
 
-    /**
-     * Parse and HTTP request.
-     * 
-     * @param request
-     *            String holding http request.
-     * @throws IOException
-     *             If an I/O error occurs reading the input stream.
-     * @throws HttpFormatException
-     *             If HTTP Request is malformed
-     */
-    public void parseRequest(String request) throws IOException, HttpFormatException {
-        BufferedReader reader = new BufferedReader(new StringReader(request));
+    return request;
+  }
 
-        setRequestLine(reader.readLine()); // Request-Line ; Section 5.1
+  private void parseRequestLine(InputStream inputStream, HttpRequest request)
+      throws IOException, HttpParsingException {
 
-        String header = reader.readLine();
-        while (header.length() > 0) {
-            appendHeaderParameter(header);
-            header = reader.readLine();
+    StringBuilder buffer = new StringBuilder();
+    boolean methodParsed = false;
+    boolean requestTargetParsed = false;
+
+    int byte_;
+    while ((byte_ = inputStream.read()) >= 0) {
+      if (byte_ == CR) {
+        byte_ = inputStream.read();
+        if (byte_ == LF) {
+          LOGGER.info("Request Line VERSION to Process : {}", buffer.toString());
+          if (!methodParsed || !requestTargetParsed)
+            throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+
+          try {
+            request.setHttpVersion(buffer.toString());
+          } catch (HttpParsingException e) {
+            throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+          }
+
+          return;
+        } else {
+          throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+        }
+      }
+
+      if (byte_ == SP) {
+        if (!methodParsed) {
+          LOGGER.info("Request Line METHOD to Process : {}", buffer.toString());
+          request.setMethod(buffer.toString());
+          methodParsed = true;
+
+        } else if (!requestTargetParsed) {
+          LOGGER.info("Request Line REQ TARGET to Process : {}", buffer.toString());
+          request.setRequestTarget(buffer.toString());
+          requestTargetParsed = true;
+        } else {
+          throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
         }
 
-        String bodyLine = reader.readLine();
-        while (bodyLine != null) {
-            appendMessageBody(bodyLine);
-            bodyLine = reader.readLine();
+        buffer.delete(0, buffer.length());
+
+      } else {
+        buffer.append((char) byte_);
+
+        if (!methodParsed)
+          if (buffer.length() > HttpMethod.MAX_LENGTH)
+            throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_501_NOT_IMPLEMENTED);
+      }
+    }
+
+  }
+
+  private void parseHeaders(InputStream inputStream, HttpRequest request) throws IOException {
+    StringBuilder buffer = new StringBuilder();
+    boolean isValue = false;
+    String fieldName = null;
+    StringBuilder valueBuffer = new StringBuilder();
+
+    int byte_;
+    while ((byte_ = inputStream.read()) >= 0) {
+      if (byte_ == CR) {
+        byte_ = inputStream.read(); // should be LF
+        if (byte_ == LF) {
+          if (buffer.length() == 0 && valueBuffer.length() == 0) {
+            // End of headers
+            return;
+          }
+
+          if (fieldName != null) {
+            LOGGER.info("Adding header: {}={}", fieldName, valueBuffer.toString().trim());
+            request.addHeader(fieldName, valueBuffer.toString().trim());
+          }
+
+          // Reset for the next header
+          fieldName = null;
+          buffer.setLength(0);
+          valueBuffer.setLength(0);
+          isValue = false;
+          continue;
         }
+      }
 
+      if (byte_ == COLON && !isValue) {
+        fieldName = buffer.toString().trim();
+        buffer.setLength(0);
+        isValue = true;
+      } else if (isValue && (byte_ == SP || byte_ == '\t') && valueBuffer.length() == 0) {
+        continue;
+      } else if (isValue) {
+        valueBuffer.append((char) byte_);
+      } else {
+        buffer.append((char) byte_);
+      }
     }
 
-    /**
-     * 
-     * 5.1 Request-Line The Request-Line begins with a method token, followed by
-     * the Request-URI and the protocol version, and ending with CRLF. The
-     * elements are separated by SP characters. No CR or LF is allowed except in
-     * the final CRLF sequence.
-     * 
-     * @return String with Request-Line
-     */
-    public String getRequestLine() {
-        return _requestLine;
+    if (fieldName != null && valueBuffer.length() > 0) {
+      request.addHeader(fieldName, valueBuffer.toString().trim());
     }
+  }
 
-    private void setRequestLine(String requestLine) throws HttpFormatException {
-        if (requestLine == null || requestLine.length() == 0) {
-            throw new HttpFormatException("Invalid Request-Line: " + requestLine);
-        }
-        _requestLine = requestLine;
+  private void parseBody(InputStream inputStream, HttpRequest request) throws IOException {
+    StringBuilder body = new StringBuilder();
+    int byte_;
+    while ((byte_ = inputStream.read()) >= 0) {
+      body.append((char) byte_);
     }
+    LOGGER.info("Request BODY : {}", body.toString());
+    request.setBody(body.toString());
 
-    private void appendHeaderParameter(String header) throws HttpFormatException {
-        int idx = header.indexOf(":");
-        if (idx == -1) {
-            throw new HttpFormatException("Invalid Header Parameter: " + header);
-        }
-        _requestHeaders.put(header.substring(0, idx), header.substring(idx + 1, header.length()));
+    // Try to parse the body as JSON
+    try {
+      JsonNode jsonNode = Json.parse(body.toString());
+      request.setJsonBody(jsonNode);
+    } catch (IOException e) {
+      LOGGER.warn("Failed to parse body as JSON: {}", e.getMessage());
     }
+  }
 
-    /**
-     * The message-body (if any) of an HTTP message is used to carry the
-     * entity-body associated with the request or response. The message-body
-     * differs from the entity-body only when a transfer-coding has been
-     * applied, as indicated by the Transfer-Encoding header field (section
-     * 14.41).
-     * @return String with message-body
-     */
-    public String getMessageBody() {
-        return _messagetBody.toString();
-    }
-
-    private void appendMessageBody(String bodyLine) {
-        _messagetBody.append(bodyLine).append("\r\n");
-    }
-
-    /**
-     * For list of available headers refer to sections: 4.5, 5.3, 7.1 of RFC 2616
-     * @param headerName Name of header
-     * @return String with the value of the header or null if not found.
-     */
-    public String getHeaderParam(String headerName){
-        return _requestHeaders.get(headerName);
-    }
 }

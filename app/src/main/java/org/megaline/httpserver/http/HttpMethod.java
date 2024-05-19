@@ -1,17 +1,16 @@
 package org.megaline.httpserver.http;
 
 public enum HttpMethod {
-  GET, HEAD, POST;
+  GET, HEAD, POST, DELETE;
 
   public static final int MAX_LENGTH;
 
   static {
-    int tempMaxLength = -1;
-    for (HttpMethod method: values()) {
-      if (method.name().length() > tempMaxLength)
-        tempMaxLength = method.name().length();
-    }
+    int tempLength = -1;
+    for (HttpMethod method : values())
+      if (method.name().length() > tempLength)
+        tempLength = method.name().length();
 
-    MAX_LENGTH = tempMaxLength;
+    MAX_LENGTH = tempLength;
   }
 }

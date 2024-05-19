@@ -3,89 +3,109 @@ package org.megaline.httpserver.http;
 import java.util.HashMap;
 import java.util.Map;
 
-public class HttpRequest extends HttpMessage {
+import com.fasterxml.jackson.databind.JsonNode;
 
-  private static final int MAX_BODY_LENGTH = 10 * 1024 * 1024; // 10 MB
-  private static final int MAX_HEADER_NAME_LENGTH = 1024; // Maximum length for header name
-  private static final int MAX_HEADER_VALUE_LENGTH = 4096; // Maximum length for header value
+public class HttpRequest extends HttpMessage {
 
   private HttpMethod method;
   private String requestTarget;
-  private String originalHttpVersion;
+  private String originalHttpVersion; // Literal version from request
+  private HttpVersion BestCompatibleHttpVersion;
+  private Map<String, String> headerFields = new HashMap<>();
   private String body;
-  private Map<String, String> headers = new HashMap<>();
-
-  // private HttpVersion bestCompatibleHttpVersion;
+  private JsonNode jsonBody;
 
   HttpRequest() {
-  }
-
-  public HttpMethod getMethod() {
-    return method;
-  }
-
-  public void setMethod(String methodName) throws HttpParsingException {
-    for (HttpMethod method : HttpMethod.values()) {
-      if (methodName.equals(method.name())) {
-        this.method = method;
-        return;
-      } else {
-        throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
-      }
-    }
   }
 
   public String getRequestTarget() {
     return requestTarget;
   }
 
-  public void setRequestTarget(String requestTarget) throws HttpParsingException {
-    if (requestTarget == null || requestTarget.length() == 0)
-      throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_500_INTERNAL_SERVER_ERROR);
+  public HttpMethod getMethod() {
+    return method;
+  }
 
-    this.requestTarget = requestTarget;
+  public HttpVersion getHttpVersion() {
+    return BestCompatibleHttpVersion;
   }
 
   public String getOriginalHttpVersion() {
     return originalHttpVersion;
   }
 
-  public void setHttpVersion(String originalHttpVersion) throws BadHttpVersionException, HttpParsingException {
+  public Map<String, String> getHeaders() {
+    return headerFields;
+  }
+
+  public String getHeader(String name) {
+    return headerFields.get(name);
+  }
+
+  public void addHeader(String fieldName, String fieldValue) {
+    headerFields.put(fieldName, fieldValue);
+  }
+
+  public JsonNode getJsonBody() {
+    return jsonBody;
+  }
+
+  public void setJsonBody(JsonNode jsonBody) {
+    this.jsonBody = jsonBody;
+  }
+
+  public void setMethod(HttpMethod method) {
+    this.method = method;
+  }
+
+  public void setOriginalHttpVersion(String originalHttpVersion) {
     this.originalHttpVersion = originalHttpVersion;
-    // this.bestCompatibleHttpVersion = HttpVersion.getBestCompatibleVersion(originalHttpVersion);
-    // if (this.bestCompatibleHttpVersion == null)
-    //   throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_505_HTTP_VERSION_NOT_SUPPORTED);
+  }
+
+  public HttpVersion getBestCompatibleHttpVersion() {
+    return BestCompatibleHttpVersion;
+  }
+
+  public void setBestCompatibleHttpVersion(HttpVersion bestCompatibleHttpVersion) {
+    BestCompatibleHttpVersion = bestCompatibleHttpVersion;
+  }
+
+  public Map<String, String> getHeaderFields() {
+    return headerFields;
+  }
+
+  public void setHeaderFields(Map<String, String> headerFields) {
+    this.headerFields = headerFields;
   }
 
   public String getBody() {
     return body;
   }
 
-  public void setBody(String body) throws HttpParsingException {
-    if (body == null)
-      throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
-    else if (body.length() > MAX_BODY_LENGTH)
-      throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+  public void setBody(String body) {
+    this.body = body;
   }
 
-  public String getHeader(String name) {
-    return headers.get(name);
+  void setRequestTarget(String requestTarget) throws HttpParsingException {
+    if (requestTarget == null || requestTarget.length() == 0)
+      throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_500_INTERNAL_ERROR);
+    this.requestTarget = requestTarget;
   }
 
-  public Map<String, String> getHeaders() {
-    return headers;
+  void setMethod(String methodName) throws HttpParsingException {
+    for (HttpMethod method : HttpMethod.values())
+      if (methodName.equals(method.name())) {
+        this.method = method;
+        return;
+      }
+    throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_501_NOT_IMPLEMENTED);
   }
 
-  public void addHeaders(String headerName, String headerValue) throws HttpParsingException {
-    if (headerName == null || headerName.isEmpty() || headerName.length() > MAX_HEADER_NAME_LENGTH)
-      throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
-    if (headerValue == null || headerValue.length() > MAX_HEADER_VALUE_LENGTH)
-      throw new HttpParsingException(HttpStatusCode.CLIENT_ERROR_400_BAD_REQUEST);
+  void setHttpVersion(String originalHttpVersion) throws HttpParsingException {
+    this.originalHttpVersion = originalHttpVersion;
+    this.BestCompatibleHttpVersion = HttpVersion.getBestCompatibleVerison(originalHttpVersion);
+    if (BestCompatibleHttpVersion == null)
+      throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_505_HTTP_VERSION_NOT_SUPPORTED);
 
-    headers.put(headerName, headerValue);
   }
-
-  // public HttpVersion getBestCompatibleHttpVersion() {
-  //   return bestCompatibleHttpVersion;
-  // }
 }

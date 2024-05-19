@@ -2,14 +2,15 @@ package org.megaline.httpserver.http;
 
 public class HttpParsingException extends Exception {
 
-  private final HttpStatusCode errorCode;
+  private HttpStatusCode error_code;
 
-  public HttpParsingException(HttpStatusCode errorCode) {
-    super(errorCode.MESSAGE);
-    this.errorCode = errorCode;
+  public HttpParsingException(HttpStatusCode error_code) {
+    super(error_code.MESSAGE);
+    this.error_code = error_code;
   }
 
-  public HttpStatusCode getErrorCode() {
-    return errorCode;
+  public HttpStatusCode getError_code() {
+    return error_code;
   }
+
 }

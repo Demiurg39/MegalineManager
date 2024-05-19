@@ -32,8 +32,8 @@ public class ServerListenerThread implements Runnable {
 
         LOGGER.info("Accepted connection : " + socket.getInetAddress());
 
-        // HttpWorkerThread workerThread = new HttpWorkerThread(socket);
-        // workerThread.startThread();
+        HttpWorkerThread workerThread = new HttpWorkerThread(socket);
+        workerThread.startThread();
         
       }
     } catch (IOException e) {
