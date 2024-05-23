@@ -6,6 +6,7 @@ public enum HttpStatusCode {
   CLIENT_ERROR_400_BAD_REQUEST(400, "Bad Request"),
   CLIENT_ERROR_401_NOT_ALLOWED(401, "Not Allowed"),
   CLIENT_ERROR_414_BAD_REQUEST(414, "URI Too Long"),
+  CLIENT_ERROR_404_NOT_FOUND(404, "Not Found"),
 
   /* --- SERVER_ERROR --- */
   SERVER_ERROR_500_INTERNAL_ERROR(500, "Internal Error"),
@@ -13,7 +14,8 @@ public enum HttpStatusCode {
   SERVER_ERROR_505_HTTP_VERSION_NOT_SUPPORTED(505, "Http Version Not Supported"),
 
   /* --- SERVER_CODES --- */
-  SERVER_CONNECTED_200(200, HttpVersion.HTTP_1_1 + " 200 OK" ),
+  SERVER_CONNECTED_200(200, HttpVersion.HTTP_1_1 + " 200 OK" ), 
+  SERVER_CONNECTED_201_CREATED(201, "Succesfully Created"),
 
   ;
 

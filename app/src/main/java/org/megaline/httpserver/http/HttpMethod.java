@@ -1,7 +1,7 @@
 package org.megaline.httpserver.http;
 
 public enum HttpMethod {
-  GET, HEAD, POST, DELETE;
+  GET, HEAD, POST, DELETE, PUT;
 
   public static final int MAX_LENGTH;
 

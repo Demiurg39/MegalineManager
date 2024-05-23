@@ -86,13 +86,13 @@ public class HttpRequest extends HttpMessage {
     this.body = body;
   }
 
-  void setRequestTarget(String requestTarget) throws HttpParsingException {
+  public void setRequestTarget(String requestTarget) throws HttpParsingException {
     if (requestTarget == null || requestTarget.length() == 0)
       throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_500_INTERNAL_ERROR);
     this.requestTarget = requestTarget;
   }
 
-  void setMethod(String methodName) throws HttpParsingException {
+  public void setMethod(String methodName) throws HttpParsingException {
     for (HttpMethod method : HttpMethod.values())
       if (methodName.equals(method.name())) {
         this.method = method;
@@ -101,7 +101,7 @@ public class HttpRequest extends HttpMessage {
     throw new HttpParsingException(HttpStatusCode.SERVER_ERROR_501_NOT_IMPLEMENTED);
   }
 
-  void setHttpVersion(String originalHttpVersion) throws HttpParsingException {
+  public void setHttpVersion(String originalHttpVersion) throws HttpParsingException {
     this.originalHttpVersion = originalHttpVersion;
     this.BestCompatibleHttpVersion = HttpVersion.getBestCompatibleVerison(originalHttpVersion);
     if (BestCompatibleHttpVersion == null)

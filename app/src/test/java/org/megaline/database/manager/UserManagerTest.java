@@ -36,13 +36,13 @@ public class UserManagerTest {
         assertTrue(rs.next());
         assertEquals(testUser.getName(), rs.getString("userName"));
         assertEquals(testUser.getAddress(), rs.getString("userAddress"));
-        assertEquals(testUser.getEmail(), rs.getString("userEmail"));
+        assertEquals(testUser.getPassportId(), rs.getString("userEmail"));
     }
 
     @Test
     public void testUpdateUserName() throws SQLException {
         userManager.create(testUser);
-        User updatedUser = new User(testUser.getId(), "Updated Name", testUser.getAddress(), testUser.getEmail());
+        User updatedUser = new User(testUser.getId(), "Updated Name", testUser.getAddress(), testUser.getPassportId());
         userManager.update(updatedUser, "userName", "Updated Name");
         ResultSet rs = userManager.get(testUser);
         assertTrue(rs.next());

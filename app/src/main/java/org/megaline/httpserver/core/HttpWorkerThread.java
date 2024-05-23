@@ -39,7 +39,6 @@ public class HttpWorkerThread implements Runnable {
     try {
       inputStream = socket.getInputStream();
       outputStream = socket.getOutputStream();
-      boolean flag = false;
 
       request = httpParser.parseHttpRequest(inputStream);
 

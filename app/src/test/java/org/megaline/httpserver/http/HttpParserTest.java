@@ -2,6 +2,7 @@ package org.megaline.httpserver.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
@@ -38,7 +39,8 @@ class HttpParserTest {
     assertEquals(HttpMethod.GET, request.getMethod());
     assertEquals("/", request.getRequestTarget());
     assertEquals(HttpVersion.HTTP_1_1, request.getHttpVersion());
-    //
+    assertEquals("HTTP/1.1", request.getOriginalHttpVersion());
+
     // Проверка заголовков
     assertEquals("localhost:8080", request.getHeader("Host"));
     assertEquals("Mozilla/5.0 (X11; Linux x86_64; rv:125.0) Gecko/20100101 Firefox/125.0",
@@ -53,7 +55,6 @@ class HttpParserTest {
     assertEquals("navigate", request.getHeader("Sec-Fetch-Mode"));
     assertEquals("none", request.getHeader("Sec-Fetch-Site"));
     assertEquals("?1", request.getHeader("Sec-Fetch-User"));
-    assertEquals("HTTP/1.1", request.getOriginalHttpVersion());
   }
 
   @Test
@@ -85,6 +86,7 @@ class HttpParserTest {
     // Проверка тела запроса
     String expectedBody = "{\n    \"userId\" : \"hello\"\n}";
     assertEquals(expectedBody, request.getBody());
+    assertTrue(request.getBody().contains("\"userId\""));
   }
 
   void parseHttpRequestHead1() {
