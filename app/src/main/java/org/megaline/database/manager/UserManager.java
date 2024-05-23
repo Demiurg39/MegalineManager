@@ -2,6 +2,7 @@ package org.megaline.database.manager;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 import org.megaline.database.JDBC;
 import org.megaline.database.manager.models.User;
@@ -12,9 +13,10 @@ public class UserManager implements InterfaceManager<User> {
   public void create(User user) throws SQLException {
     JDBC db = new JDBC("demi", "demi");
 
-    if (user.getEmail() != null) {
-      db.executeQuery("INSERT INTO Users (userId, userName, userAddress, userEmail) VALUES (" +
-          "'" + user.getId() + "', '" + user.getName() + "', '" + user.getAddress() + "', '" + user.getEmail() + "')");
+    if (user.getPassportId() != null) {
+      db.executeQuery("INSERT INTO Users (userId, userName, userAddress, userPassportId) VALUES (" +
+          "'" + user.getId() + "', '" + user.getName() + "', '" + user.getAddress() + "', '" + user.getPassportId()
+          + "')");
     } else {
       db.executeQuery("INSERT INTO Users (userId, userName, userAddress) VALUES (" +
           "'" + user.getId() + "', '" + user.getName() + "', '" + user.getAddress() + "')");
@@ -58,5 +60,19 @@ public class UserManager implements InterfaceManager<User> {
     ResultSet rs = db.executeQuery("SELECT * FROM Users WHERE userId = '" + user.getId() + "'");
 
     return rs;
+  }
+
+  public User getUserById(UUID userId) throws SQLException {
+    JDBC db = new JDBC("demi", "demi");
+
+    ResultSet rs = db.executeQuery("SELECT * FROM Users WHERE userId = '" + userId + "'");
+    if (rs.next()) {
+      return new User(
+          UUID.fromString(rs.getString("userId")),
+          rs.getString("userName"),
+          rs.getString("userAddress"),
+          rs.getString("userPassportId"));
+    }
+    return null;
   }
 }

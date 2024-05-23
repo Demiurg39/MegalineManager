@@ -6,20 +6,20 @@ public class User {
   private UUID id;
   private String name;
   private String address;
-  private String email;
+  private String passportId;
 
-  public User(UUID id, String name, String address, String email) {
+  public User(UUID id, String name, String address, String passportId) {
     this.id = id;
     this.name = name;
     this.address = address;
-    this.email = email;
+    this.passportId = passportId;
   }
 
-  public User(String name, String address, String email) {
+  public User(String name, String address, String passportId) {
     this.id = UUID.randomUUID();
     this.name = name;
     this.address = address;
-    this.email = email;
+    this.passportId = passportId;
   }
 
   public User(String name, String address) {
@@ -40,7 +40,7 @@ public class User {
     return this.address;
   }
 
-  public String getEmail() {
-    return this.email;
+  public String getPassportId() {
+    return this.passportId;
   }
 }
