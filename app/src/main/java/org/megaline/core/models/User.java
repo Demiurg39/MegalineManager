@@ -49,11 +49,11 @@ public class User {
 
   @Override
   public String toString() {
-    return "User{" +
-            "id=" + id +
-            ", name='" + name + '\'' +
-            ", address='" + address + '\'' +
-            ", passportId='" + passportId + '\'' +
-            '}';
+    return "Client:" + "\n" +
+            "ID = " + id + "\n" +
+            "Name = " + name + '\n' +
+            "Address = " + address + '\n' +
+            "Passport ID = " + passportId + '\n'
+            ;
   }
 }
