@@ -1,5 +1,8 @@
 package org.megaline.core.models;
 
+import org.megaline.core.dao.TariffPlanDao;
+import org.megaline.core.util.DHCP;
+
 import javax.persistence.*;
 
 @Entity
@@ -19,6 +22,7 @@ public class Connection {
   @Column(name = "connectionSpeed")
   private double connectionSpeed;
 
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "tariffId")
   private TariffPlan tariffPlan;
@@ -30,19 +34,25 @@ public class Connection {
   public Connection() {
   }
 
-  public Connection(String ipAddress, User user, boolean connectionStatus) {
-    this.ipAddress = ipAddress;
+  public Connection(User user) {
     this.user = user;
+    this.ipAddress = DHCP.generateIPAddress();
+    this.connectionStatus = false;
+    this.connectionSpeed = 0.0;
+  }
+
+  public Connection(User user, TariffPlan tariffPlan) {
+    this(user);
+    this.tariffPlan = tariffPlan;
+    this.connectionSpeed = tariffPlan.getInternetSpeed();
+    this.connectionStatus = true;
+  }
+
+  public Connection(User user, boolean connectionStatus, TariffPlan tariffPlan) {
+    this(user, tariffPlan);
     this.connectionStatus = connectionStatus;
   }
 
-  public Connection(String ipAddress, User user) {
-    this(ipAddress, user, false);
-  }
-
-  public Connection(User user) {
-    this("127.0.0.1", user, false);
-  }
 
   public Long getId() {
     return id;
@@ -74,5 +84,13 @@ public class Connection {
 
   public void setConnectionSpeed(double connectionSpeed) {
     this.connectionSpeed = connectionSpeed;
+  }
+
+  public void setInternetSpeed(double internetSpeed) {
+    this.connectionSpeed = internetSpeed;
+  }
+
+  public void setTariffPlan(TariffPlan tariffPlan) {
+    this.tariffPlan = tariffPlan;
   }
 }
