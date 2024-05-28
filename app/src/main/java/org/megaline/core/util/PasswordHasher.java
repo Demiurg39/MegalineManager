@@ -8,7 +8,7 @@ public class PasswordHasher {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
-    public static boolean passwordCheck(String hash, String password) {
-        return hash.equals(getHash(password)) ? true : false;
+    public static boolean passwordCheck(String password, String hash) {
+        return BCrypt.checkpw(password, hash);
     }
 }
