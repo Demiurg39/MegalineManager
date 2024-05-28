@@ -27,23 +27,21 @@ dependencies {
     // For database driver
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.1.2'
 
-    // a dependency on Jackson Databind
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.8.9'
-
-    // and a dependency on vert.x
-    implementation 'io.vertx:vertx-core:3.5.3'
-
     // Simple logging for Java
     implementation 'org.slf4j:slf4j-api:2.0.13'
 
     // Logback as login provider
     implementation 'ch.qos.logback:logback-classic:1.5.6'
 
-    // Lanterna as TUI provider
-    implementation 'com.googlecode.lanterna:lanterna:3.1.2'
-
     // Hash library, for password hashing
     implementation 'org.mindrot:jbcrypt:0.4'
+
+    // Hybernate
+    implementation 'org.hibernate:hibernate-core:5.4.30.Final'
+
+    implementation 'javax.persistence:javax.persistence-api:2.2'
+
+    implementation 'org.hibernate:hibernate-entitymanager:5.4.30.Final'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -60,7 +58,7 @@ jar {
 
 application {
     // Define the main class for the application.
-    mainClass = 'org.megaline.httpserver.HttpServer'
+    mainClass = 'org.megaline.tui.SwingMegaTUI'
 }
 
 tasks.named('test') {
