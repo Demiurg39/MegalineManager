@@ -16,25 +16,30 @@ public class TariffPlan {
   @Column(name = "internetSpeed")
   private double internetSpeed;
 
+  @Column(name = "name")
+  private String name;
+
   @Column(name = "description")
   private String description;
 
   public TariffPlan() {
   }
 
-  public TariffPlan(double price, double internetSpeed, String description) throws IllegalArgumentException {
+  public TariffPlan(double price, double internetSpeed, String name, String description) throws IllegalArgumentException {
     if (internetSpeed > 200) {
       throw new IllegalArgumentException("Unreachable internet speed");
     }
     this.price = price;
     this.internetSpeed = internetSpeed;
+    this.name = name;
     this.description = description;
   }
 
-  public TariffPlan(double price, double internetSpeed) throws IllegalArgumentException {
-    if (internetSpeed > 200) {
+  public TariffPlan(String name, double price, double internetSpeed) throws IllegalArgumentException {
+    if (internetSpeed > 300) {
       throw new IllegalArgumentException("Unreachable internet speed");
     }
+    this.name = name;
     this.price = price;
     this.internetSpeed = internetSpeed;
   }
@@ -47,9 +52,9 @@ public class TariffPlan {
     return price;
   }
 
-  public double getInternetSpeed() {
-    return internetSpeed;
-  }
+  public double getInternetSpeed() { return internetSpeed; }
+
+  public String getName() { return name; }
 
   public String getDescription() {
     return description;
@@ -57,5 +62,16 @@ public class TariffPlan {
 
   public void setDescription(String description) {
     this.description = description;
+  }
+
+  @Override
+  public String toString() {
+    return "Tariff:" + "\n" +
+            "ID = " + id + "\n" +
+            "Name = " + name + '\n' +
+            "Price = " + price + '\n' +
+            "Internet speed = " + internetSpeed + '\n' +
+            description + '\n'
+            ;
   }
 }
