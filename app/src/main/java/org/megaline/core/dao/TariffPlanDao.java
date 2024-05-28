@@ -3,7 +3,9 @@ package org.megaline.core.dao;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 import org.megaline.core.models.TariffPlan;
+import org.megaline.core.models.User;
 import org.megaline.services.HibernateSessionFactoryUtil;
 
 import java.util.List;
@@ -30,9 +32,20 @@ public class TariffPlanDao {
         }
     }
 
-    public TariffPlan findById(int id) {
+    public TariffPlan findById(long id) {
         try (Session session = sessionFactory.openSession()) {
             return session.get(TariffPlan.class, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public TariffPlan findByName(String name) {
+        try (Session session = sessionFactory.openSession()) {
+            Query<TariffPlan> query = session.createQuery("FROM TariffPlan WHERE name = :name", TariffPlan.class);
+            query.setParameter("name", name);
+            return query.uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
