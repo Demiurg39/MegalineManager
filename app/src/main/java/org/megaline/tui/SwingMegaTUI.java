@@ -1,18 +1,11 @@
 package org.megaline.tui;
 
-import org.megaline.core.dao.ConnectionDao;
-import org.megaline.core.dao.EmployeeDao;
-import org.megaline.core.dao.TariffPlanDao;
-import org.megaline.core.dao.UserDao;
-import org.megaline.core.models.Employee;
-import org.megaline.core.models.TariffPlan;
-import org.megaline.core.models.User;
-import org.megaline.core.models.Connection;
+import org.megaline.core.dao.*;
+import org.megaline.core.models.*;
 
 import java.awt.event.*;
 import java.util.List;
 
-import org.megaline.core.util.DHCP;
 import org.megaline.core.util.PasswordHasher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +25,8 @@ public class SwingMegaTUI extends JFrame {
     private UserDao userDao = new UserDao();
     private TariffPlanDao tariffPlanDao = new TariffPlanDao();
     private ConnectionDao connectionDao = new ConnectionDao();
+    private QuestionDao questionDao = new QuestionDao();
+    private TicketDao ticketDao = new TicketDao();
 
     public SwingMegaTUI() {
         setTitle("MegaLine");
@@ -58,7 +53,6 @@ public class SwingMegaTUI extends JFrame {
 
         megaLinePanel.add(megaLabel);
         megaLinePanel.add(lineLabel);
-
 
         JLabel nameLabel = new JLabel("Employee id:");
         nameField = new JTextField();
@@ -528,6 +522,12 @@ public class SwingMegaTUI extends JFrame {
 
                 JTextField searchField = new JTextField();
                 JTextArea faqArea = new JTextArea();
+                Font font = new Font("Arial", Font.PLAIN, 14); // Создание нового шрифта
+                faqArea.setFont(font); // Установка шрифта для текстовой области
+                faqArea.setEditable(false);
+                faqArea.setBackground(Color.YELLOW);
+                faqArea.setRows(20); // Установка числа строк в текстовой области
+                faqArea.setColumns(40); // Установка числа столбцов в текстовой области
                 faqArea.setEditable(false);
                 faqArea.setBackground(Color.YELLOW);
 
@@ -536,9 +536,24 @@ public class SwingMegaTUI extends JFrame {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         String query = searchField.getText();
-                        // Implement FAQ search logic here
 
-                        faqArea.setText("Result for query: " + query + "\n1. FAQ Entry 1\n2. FAQ Entry 2");
+                        // Выполнить поиск вопросов и ответов
+                        List<Question> searchResults = questionDao.searchQuestionsAndAnswers(query);
+
+                        // Отобразить результаты поиска в текстовой области
+                        if (searchResults.isEmpty()) {
+                            faqArea.setText("No results found for query: " + query);
+                        } else {
+                            StringBuilder resultText = new StringBuilder("Results for query: " + query + "\n");
+                            for (Question question : searchResults) {
+                                resultText.append(question.getQuestion()).append("\n");
+                                for (Answer answer : question.getAnswers()) {
+                                    resultText.append("- ").append(answer.getAnswer()).append("\n");
+                                }
+                                resultText.append("\n");
+                            }
+                            faqArea.setText(resultText.toString());
+                        }
                     }
                 });
 
@@ -560,15 +575,22 @@ public class SwingMegaTUI extends JFrame {
                 createTicketFrame.getContentPane().setBackground(Color.YELLOW);
 
                 JPanel createTicketPanel = new JPanel();
-                createTicketPanel.setLayout(new GridLayout(5, 2));
+                createTicketPanel.setLayout(new GridLayout(6, 2));
                 createTicketPanel.setBackground(Color.YELLOW);
+
+                JLabel userIdLabel = new JLabel("User ID");
+                JTextField userIdField = new JTextField();
 
                 JLabel titleLabel = new JLabel("Title:");
                 JTextField titleField = new JTextField();
+
                 JLabel descriptionLabel = new JLabel("Description:");
                 JTextArea descriptionArea = new JTextArea();
+
                 JButton createButton = new JButton("Create");
 
+                createTicketPanel.add(userIdLabel);
+                createTicketPanel.add(userIdField);
                 createTicketPanel.add(titleLabel);
                 createTicketPanel.add(titleField);
                 createTicketPanel.add(descriptionLabel);
@@ -579,12 +601,26 @@ public class SwingMegaTUI extends JFrame {
                 createButton.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
+                        Long userId= Long.parseLong(userIdField.getText());
+                        // Здесь выполните поиск пользователя по userId или passportId
+                        User user = userDao.findById(userId); // Примерный метод для поиска пользователя по userId или passportId
+
                         String title = titleField.getText();
                         String description = descriptionArea.getText();
-                        // Implement ticket creation logic here
 
-                        JOptionPane.showMessageDialog(createTicketFrame, "Ticket created successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
-                        createTicketFrame.dispose();
+                        if (user != null) {
+                            Ticket newTicket = new Ticket(title, description, user);
+                            boolean createdSuccessfully = ticketDao.saveOrUpdate(newTicket);
+
+                            if (createdSuccessfully) {
+                                JOptionPane.showMessageDialog(createTicketFrame, "Ticket created successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            } else {
+                                JOptionPane.showMessageDialog(createTicketFrame, "Failed to create ticket", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                            createTicketFrame.dispose();
+                        } else {
+                            JOptionPane.showMessageDialog(createTicketFrame, "User not found", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
                     }
                 });
 
