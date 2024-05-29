@@ -3,10 +3,7 @@ package org.megaline.services;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
-import org.megaline.core.models.Connection;
-import org.megaline.core.models.Employee;
-import org.megaline.core.models.TariffPlan;
-import org.megaline.core.models.User;
+import org.megaline.core.models.*;
 
 
 public class HibernateSessionFactoryUtil {
@@ -22,6 +19,9 @@ public class HibernateSessionFactoryUtil {
         configuration.addAnnotatedClass(Connection.class);
         configuration.addAnnotatedClass(TariffPlan.class);
         configuration.addAnnotatedClass(Employee.class);
+        configuration.addAnnotatedClass(Question.class);
+        configuration.addAnnotatedClass(Answer.class);
+        configuration.addAnnotatedClass(Ticket.class);
         StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
         sessionFactory = configuration.buildSessionFactory(builder.build());
 
