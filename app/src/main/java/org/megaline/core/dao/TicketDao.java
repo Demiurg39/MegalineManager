@@ -7,6 +7,7 @@ import org.hibernate.query.Query;
 import org.megaline.core.models.Ticket;
 import org.megaline.services.HibernateSessionFactoryUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TicketDao {
@@ -40,6 +41,16 @@ public class TicketDao {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public List<Ticket> filterTicketsByStatus(List<Ticket> tickets, String status) {
+        List<Ticket> filteredTickets = new ArrayList<>();
+        for (Ticket ticket : tickets) {
+            if (ticket.getStatus().equals(status)) {
+                filteredTickets.add(ticket);
+            }
+        }
+        return filteredTickets;
     }
 
     public List<Ticket> findAll() {
