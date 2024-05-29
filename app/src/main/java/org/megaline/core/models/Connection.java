@@ -27,6 +27,7 @@ public class Connection {
   @JoinColumn(name = "tariffId")
   private TariffPlan tariffPlan;
 
+
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "userId")
   private User user;
@@ -92,5 +93,9 @@ public class Connection {
 
   public void setTariffPlan(TariffPlan tariffPlan) {
     this.tariffPlan = tariffPlan;
+  }
+
+  public void setUser(User user) {
+    this.user = user;
   }
 }
