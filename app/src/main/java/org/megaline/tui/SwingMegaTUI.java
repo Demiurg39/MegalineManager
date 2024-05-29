@@ -512,7 +512,7 @@ public class SwingMegaTUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame faqFrame = new JFrame("Frequently Asked Questions");
-                faqFrame.setSize(400, 300);
+                faqFrame.setSize(600, 400);
                 faqFrame.setLocationRelativeTo(null);
                 faqFrame.getContentPane().setBackground(Color.YELLOW);
 
@@ -570,7 +570,7 @@ public class SwingMegaTUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame createTicketFrame = new JFrame("Create a New Ticket");
-                createTicketFrame.setSize(400, 300);
+                createTicketFrame.setSize(600, 600);
                 createTicketFrame.setLocationRelativeTo(null);
                 createTicketFrame.getContentPane().setBackground(Color.YELLOW);
 
@@ -632,20 +632,69 @@ public class SwingMegaTUI extends JFrame {
         viewTicketsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JFrame activeTicketsFrame = new JFrame("Active Tickets");
-                activeTicketsFrame.setSize(400, 300);
-                activeTicketsFrame.setLocationRelativeTo(null);
-                activeTicketsFrame.getContentPane().setBackground(Color.YELLOW);
+                List<Ticket> tickets = ticketDao.findAll();
+                displayTickets(tickets);
+            }
 
-                JTextArea activeTicketsArea = new JTextArea("Ticket 1: ...\n\nTicket 2: ...\n\nTicket 3: ...");
-                activeTicketsArea.setEditable(false);
-                activeTicketsArea.setBackground(Color.YELLOW);
+            public void displayTickets(List<Ticket> tickets) {
+                JFrame ticketsFrame = new JFrame("Tickets");
+                ticketsFrame.setSize(600, 400);
+                ticketsFrame.setLocationRelativeTo(null);
+                ticketsFrame.getContentPane().setBackground(Color.WHITE);
 
-                activeTicketsFrame.add(new JScrollPane(activeTicketsArea));
-                activeTicketsFrame.setVisible(true);
+                JPanel ticketsPanel = new JPanel(new GridLayout(tickets.size(), 1));
+
+                for (Ticket ticket : tickets) {
+                    JButton ticketButton = new JButton("Ticket : " + ticket.getTitle() + " " + ticket.getId());
+                    if (ticket.getStatus().equals("Open"))
+                        ticketButton.setBackground(Color.GREEN);
+                    else {
+                        ticketButton.setBackground(Color.RED);
+                    }
+                    ticketButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            displayTicketDetails(ticket);
+                        }
+                    });
+                    ticketsPanel.add(ticketButton);
+                }
+
+                ticketsFrame.add(new JScrollPane(ticketsPanel));
+                ticketsFrame.setVisible(true);
+            }
+
+            public void displayTicketDetails(Ticket ticket) {
+                JFrame ticketFrame = new JFrame("Ticket Details: " + ticket.getTitle());
+                ticketFrame.setSize(600, 400);
+                ticketFrame.setLocationRelativeTo(null);
+                ticketFrame.getContentPane().setBackground(Color.WHITE);
+
+                JTextArea detailsArea = new JTextArea(ticket.toString());
+                detailsArea.setEditable(false);
+
+                if (ticket.getStatus().equals("Open")) {
+                    JButton closeButton = new JButton("Close Ticket");
+                    closeButton.addActionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            int option = JOptionPane.showConfirmDialog(ticketFrame, "Are you sure you want to close this ticket?", "Confirm", JOptionPane.YES_NO_OPTION);
+                            if (option == JOptionPane.YES_OPTION) {
+                                // Implement ticket closing logic here
+                                ticket.setStatus("Closed");
+                                ticketDao.saveOrUpdate(ticket);
+                                JOptionPane.showMessageDialog(ticketFrame, "Ticket closed successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                ticketFrame.dispose();
+                            }
+                        }
+                    });
+                    ticketFrame.add(closeButton, BorderLayout.SOUTH);
+                }
+
+                ticketFrame.add(new JScrollPane(detailsArea), BorderLayout.CENTER);
+                ticketFrame.setVisible(true);
             }
         });
-
 
         quitButton.addActionListener(new ActionListener() {
             @Override
