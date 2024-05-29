@@ -8,6 +8,8 @@ import org.megaline.core.models.Employee;
 import org.megaline.core.models.TariffPlan;
 import org.megaline.core.models.User;
 import org.megaline.core.models.Connection;
+
+import java.awt.event.*;
 import java.util.List;
 
 import org.megaline.core.util.DHCP;
@@ -16,9 +18,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class SwingMegaTUI extends JFrame {
 
@@ -302,7 +304,7 @@ public class SwingMegaTUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFrame manageConnectionsFrame = new JFrame("Manage User Connection");
-                manageConnectionsFrame.setSize(400, 300);
+                manageConnectionsFrame.setSize(600, 400);
                 manageConnectionsFrame.setLocationRelativeTo(null);
                 manageConnectionsFrame.getContentPane().setBackground(Color.YELLOW);
 
@@ -325,7 +327,7 @@ public class SwingMegaTUI extends JFrame {
                         String idText = idField.getText();
 
                         if (idText.isEmpty()) {
-                            JOptionPane.showMessageDialog(SwingMegaTUI.this, "ID cannot be empty, please enter valid data", "Invalid data", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(null, "ID cannot be empty, please enter valid data", "Invalid data", JOptionPane.ERROR_MESSAGE);
                             idField.requestFocusInWindow();
                         } else {
                             try {
@@ -334,24 +336,32 @@ public class SwingMegaTUI extends JFrame {
                                 if (user != null) {
                                     // Создаем новое окно для управления подключениями
                                     JFrame manageConnectionsWindow = new JFrame("Manage Connections for User: " + user.getName());
-                                    manageConnectionsWindow.setSize(400, 200);
+                                    manageConnectionsWindow.setSize(600, 400);
                                     manageConnectionsWindow.setLocationRelativeTo(null);
                                     manageConnectionsWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                                    Connection connection = connectionDao.findByUserId(user.getId());
+
+                                    Connection[] connectionHolder = new Connection[1]; // Используем массив для хранения connection
+                                    connectionHolder[0] = connectionDao.findByUserId(user.getId());
                                     TariffPlan tariff = null;
-                                    try {
-                                        tariff = tariffPlanDao.findById(connection.getTariffPlan().getId());
-                                    } catch (NullPointerException npe) {
-                                        System.err.println("This user not connected to any tariff plan");
-                                        npe.printStackTrace();
+                                    if (connectionHolder[0] != null && connectionHolder[0].getTariffPlan() != null) {
+                                        tariff = tariffPlanDao.findById(connectionHolder[0].getTariffPlan().getId());
                                     }
+
                                     // Создаем панель для управления подключениями
                                     JPanel manageConnectionsPanel = new JPanel();
-                                    manageConnectionsPanel.setLayout(new GridLayout(3, 2));
+                                    manageConnectionsPanel.setLayout(new GridLayout(4, 2));
 
                                     // Добавляем компоненты для управления подключениями
                                     JLabel internetSpeedLabel = new JLabel("Internet Speed:");
-                                    JTextField internetSpeedField = new JTextField(String.valueOf(connection.getConnectionSpeed()));
+                                    JTextField internetSpeedField = new JTextField(connectionHolder[0] != null ? String.valueOf(connectionHolder[0].getConnectionSpeed()) : "");
+                                    TariffPlan finalTariff = tariff;
+                                    internetSpeedField.addFocusListener(new FocusAdapter() {
+                                        @Override
+                                        public void focusGained(FocusEvent e) {
+                                            internetSpeedField.setText("");
+                                        }
+                                   });
+
                                     JLabel tariffPlanLabel = new JLabel("Tariff Plan:");
                                     JComboBox<String> tariffPlanComboBox = new JComboBox<>();
                                     List<TariffPlan> tariffPlans = tariffPlanDao.findAll();
@@ -361,39 +371,113 @@ public class SwingMegaTUI extends JFrame {
                                     if (tariff != null)
                                         tariffPlanComboBox.setSelectedItem(tariff.getName());
 
-                                    JCheckBox connectionStatusCheckBox = new JCheckBox("Connection Status", connection.getConnectionStatus());
+                                    tariffPlanComboBox.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            String selectedTariffName = (String) tariffPlanComboBox.getSelectedItem();
+                                            TariffPlan selectedTariff = tariffPlanDao.findByName(selectedTariffName);
+                                            if (selectedTariff != null) {
+                                                internetSpeedField.setText(String.valueOf(selectedTariff.getInternetSpeed()));
+                                            }
+                                        }
+                                    });
+
+
+                                    JCheckBox connectionStatusCheckBox = new JCheckBox("Connection Status", connectionHolder[0] != null && connectionHolder[0].getConnectionStatus());
+
                                     JButton applyButton = new JButton("Apply");
+
+                                    boolean[] changesMade = {false};
+                                    connectionStatusCheckBox.addItemListener(new ItemListener() {
+                                        @Override
+                                        public void itemStateChanged(ItemEvent e) {
+                                            changesMade[0] = true;
+                                        }
+                                    });
+                                    internetSpeedField.getDocument().addDocumentListener(new DocumentListener() {
+                                        @Override
+                                        public void insertUpdate(DocumentEvent e) {
+                                            changesMade[0] = true;
+                                        }
+
+                                        @Override
+                                        public void removeUpdate(DocumentEvent e) {
+                                            changesMade[0] = true;
+                                        }
+
+                                        @Override
+                                        public void changedUpdate(DocumentEvent e) {
+                                            changesMade[0] = true;
+                                        }
+                                    });
+                                    tariffPlanComboBox.addActionListener(new ActionListener() {
+                                        @Override
+                                        public void actionPerformed(ActionEvent e) {
+                                            changesMade[0] = true;
+                                        }
+                                    });
 
                                     manageConnectionsPanel.add(internetSpeedLabel);
                                     manageConnectionsPanel.add(internetSpeedField);
                                     manageConnectionsPanel.add(tariffPlanLabel);
                                     manageConnectionsPanel.add(tariffPlanComboBox);
+                                    manageConnectionsPanel.add(new JLabel()); // Empty cell for layout
                                     manageConnectionsPanel.add(connectionStatusCheckBox);
+                                    manageConnectionsPanel.add(new JLabel()); // Empty cell for layout
                                     manageConnectionsPanel.add(applyButton);
 
                                     // Добавляем панель на окно
                                     manageConnectionsWindow.add(manageConnectionsPanel);
 
-                                    // Передаем объект пользователя в окно управления подключениями (например, через конструктор или метод)
-                                    // ...
-
                                     applyButton.addActionListener(new ActionListener() {
                                         @Override
                                         public void actionPerformed(ActionEvent e) {
-                                            // Реализация логики применения изменений
+                                            if (connectionHolder[0] == null) {
+                                                int response = JOptionPane.showConfirmDialog(manageConnectionsWindow, "No connection found for this user. Do you want to create a new connection?", "Create Connection", JOptionPane.YES_NO_OPTION);
+                                                if (response == JOptionPane.YES_OPTION) {
+                                                    String selectedTariffName = (String) tariffPlanComboBox.getSelectedItem();
+                                                    TariffPlan selectedTariff = tariffPlanDao.findByName(selectedTariffName);
+                                                    Connection newConnection = new Connection(user, selectedTariff);
+                                                    newConnection.setConnectionSpeed(internetSpeedField != null ? Double.parseDouble(internetSpeedField.getText()) : selectedTariff.getInternetSpeed());
+                                                    newConnection.setConnectionStatus(connectionStatusCheckBox.isSelected());
+                                                    boolean isCreated = connectionDao.saveOrUpdate(newConnection);
+
+                                                    if (isCreated) {
+                                                        JOptionPane.showMessageDialog(manageConnectionsWindow, "New connection created successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                                        connectionHolder[0] = newConnection; // Обновляем connectionHolder
+                                                    } else {
+                                                        JOptionPane.showMessageDialog(manageConnectionsWindow, "Fail to create new connection", "Failed", JOptionPane.ERROR_MESSAGE);
+                                                    }
+                                                }
+                                            } else {
+                                                // Проверяем, были ли внесены изменения
+                                                if (changesMade[0]) {
+                                                    String selectedTariffName = (String) tariffPlanComboBox.getSelectedItem();
+                                                    TariffPlan selectedTariff = tariffPlanDao.findByName(selectedTariffName);
+                                                    connectionHolder[0].setConnectionSpeed(internetSpeedField != null ? Double.parseDouble(internetSpeedField.getText()) : selectedTariff.getInternetSpeed());
+                                                    connectionHolder[0].setTariffPlan(selectedTariff);
+                                                    connectionHolder[0].setConnectionStatus(connectionStatusCheckBox.isSelected());
+                                                    connectionDao.saveOrUpdate(connectionHolder[0]);
+                                                    JOptionPane.showMessageDialog(manageConnectionsWindow, "Changes applied successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                                } else {
+                                                    JOptionPane.showMessageDialog(manageConnectionsWindow, "No changes made.", "Information", JOptionPane.INFORMATION_MESSAGE);
+                                                }
+                                            }
                                         }
                                     });
 
                                     // Отображаем окно управления подключениями
                                     manageConnectionsWindow.setVisible(true);
+                                    idField.setText("");
+                                    idField.requestFocusInWindow();
 
                                     // Закрываем текущее окно поиска пользователя
                                     manageConnectionsFrame.dispose();
                                 } else {
-                                    JOptionPane.showMessageDialog(SwingMegaTUI.this, "No user found with the provided ID", "Search Results", JOptionPane.INFORMATION_MESSAGE);
+                                    JOptionPane.showMessageDialog(null, "No user found with the provided ID", "Search Results", JOptionPane.INFORMATION_MESSAGE);
                                 }
                             } catch (NumberFormatException ex) {
-                                JOptionPane.showMessageDialog(SwingMegaTUI.this, "Invalid ID format, please enter a valid integer", "Invalid data", JOptionPane.ERROR_MESSAGE);
+                                JOptionPane.showMessageDialog(null, "Invalid ID format, please enter a valid integer", "Invalid data", JOptionPane.ERROR_MESSAGE);
                                 idField.setText("");
                                 idField.requestFocusInWindow();
                             }
@@ -403,6 +487,7 @@ public class SwingMegaTUI extends JFrame {
 
                 manageConnectionsFrame.add(manageConnectionsPanel);
                 manageConnectionsFrame.setVisible(true);
+                idField.requestFocusInWindow();
             }
         });
 
