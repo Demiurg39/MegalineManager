@@ -87,4 +87,9 @@ public class Ticket {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "Title: " + title + "\nDescription: " + description + "\n" + userId + "\nCreatedAt: " + createdAt;
+    }
 }
